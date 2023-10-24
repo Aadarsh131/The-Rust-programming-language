@@ -19,10 +19,14 @@ Keeping track of what parts of code are using what data on the heap, minimizing 
 
 ### String types
 Unlike other basic datatypes (which are stored in stack, because of its fixed size), strings are stored in heap.
-Lets see how Rust knows when to clean up the data.
 
-We’ve already seen string literals (`let s = "Aadarsh"`), where a string value is hardcoded into our program. String literals are convenient, but they aren’t suitable for every situation in which we may want to use text. One reason is that they’re `Immutable`. Another is that not every string value can be known when we write our code: for example, what if we want to take user input and store it?*(in this situation allocator will need to allocate the heap memory at the runtime)*.  
-For these situations, Rust has a second string type, **String**. This type manages data allocated on the heap and as such is able to store an amount of text that is unknown to us at compile time. You can create a String from a string literal using the `String::from` function, like so:
+String literals cannot be used everywhere as much as String, because-
+- string literals are `Immutable` and is of `fixed size`
+- cannot take user input at runtime *(in this situation allocator will need to allocate the heap memory at the runtime)*.
+
+For those, Rust has a second string type, **String**. This type manages data allocated on the heap and stores the data at compile time. 
+
+Converting a string literal to String using the `String::from` function:
 ```rs
 let s = String::from("hello");
 ```
@@ -136,7 +140,7 @@ With `String` ( memory stored on the heap ):
     let s1 = String::from("hello");
     let s2 = s1;
 ```
-<img src="./figures/StringInternalImplementation.svg" height="300px">  
+<img src="./figures/StringInternalImplementation.jpg" height="300px">  
 
 With `let s2 = s1;` a Shallow copy (copying the pointer value) is done, which is nothing but a reference to the String literal in the heap, hence `s2` will point to the same address in memory.  
 BUT, the very well know problem here is, when `s1` and `s2` goes out of scope, both will try to `free` the same memory. This is known as a ``double free error``. Freeing memory twice can lead to memory corruption, which can potentially lead to security vulnerabilities
@@ -163,10 +167,10 @@ The problem is solved, now `Only s2` will `free` the memory, when it goes out of
     println!("s1 = {}, s2 = {}", s1, s2); //s1="hello", s2="hello"
 ```
 **NOTE:** Deep Copying(cloning) the data from the `heap` is expensive in terms of runtime performance, when data is large.  
-<img src='./figures/StringDeepCopy.svg' height='400px'>
+<img src='./figures/StringDeepCopy.jpg' height='400px'>
 
 # Ownership in functions
-The mechanics of passing a value to a function are similar to those when assigning a value to a variable. Passing a variable to a function will move or copy, just as assignment does
+Passing a variable to a function will move or copy, just as assignment does. `Ownership can be transfered` into function and can be returned back from function (from the fn with return values)
 ```rs
 fn main() {
     let s = String::from("hello");  // s comes into scope
@@ -193,3 +197,44 @@ fn makes_copy(some_integer: i32) { // some_integer comes into scope
 } // Here, some_integer goes out of scope. Nothing special happens.
 ```
 Above is a clear line by line analysis.
+
+Function with return values-
+```rs
+fn main() {
+    let s1 = gives_ownership();         // gives_ownership moves its return
+                                        // value into s1
+
+    let s2 = String::from("hello");     // s2 comes into scope
+
+    let s3 = takes_and_gives_back(s2);  // s2 is moved into
+                                        // takes_and_gives_back, which also
+                                        // moves its return value into s3
+} // Here, s3 goes out of scope and is dropped. s2 was moved, so nothing
+  // happens. s1 goes out of scope and is dropped.
+
+fn gives_ownership() -> String {             // gives_ownership will move its
+                                             // return value into the function
+                                             // that calls it
+
+    let some_string = String::from("yours"); // some_string comes into scope
+
+    some_string                              // some_string is returned and
+                                             // moves out to the calling
+                                             // function
+}
+
+// This function takes a String and returns one
+fn takes_and_gives_back(a_string: String) -> String { // a_string comes into
+                                                      // scope
+
+    a_string  // a_string is returned and moves out to the calling function
+}
+```
+The ownership of a variable follows the same pattern every time:
+- assigning a value to another variable moves it.
+- When a variable that includes data on the heap goes out of scope, the value will be cleaned up by drop unless ownership of the data has been moved to another variable.
+
+While this works, taking ownership and then returning ownership with every function is a bit tedious.  
+
+Rust has a feature for using a value without transferring ownership, called `borrowing (using references)`
+
