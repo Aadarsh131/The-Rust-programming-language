@@ -3,3 +3,6 @@
 |8|8.3|
 |9|All|
 |10|only left with writing down the concept|
+|11|All|
+|12|All|
+|13|13.3|
