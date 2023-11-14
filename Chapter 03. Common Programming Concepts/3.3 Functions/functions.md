@@ -1,16 +1,16 @@
 - **Statements** are instructions that perform some action and do not return a value.
 
 - **Expressions** evaluate to a resultant value. 
-    >eg.
+    >eg.  
     > Calling a function is an expression
     >
     > Calling a macro is an expression
     >
     >A new scope block created with curly brackets is an expression
     >
-    > 5+6 is an expression
+    > `5+6` is an expression
     >
-    > if else expression
+    > `if else` expression
 
 ```rs
 fn main() {

@@ -1,4 +1,4 @@
-## Takeaways from this section, which was different from the usual way
+## Takeaways from this section, which was different from the usual way of C/C++
 
 ```rust
 fn main() {
@@ -13,7 +13,7 @@ fn main() {
 > Error- "expected `bool`, found integer"
 <hr>
 
-> Using too many `else if` expressions can clutter your code, so if you have more than one, you might want to refactor your code. Chapter 6 describes a powerful Rust branching construct called `match` for these cases
+> Intead of using too many `else if` expressions we can use `match`, discussed in Chapter 6.
 
 ##  Using if in a let Statement
 Because `if` is an expression, we can use it on the right side of a `let statement` to assign the outcome to a variable
@@ -79,7 +79,7 @@ fn main() {
 <br>
 
 **<u>While loop-</u>**  
-While iterating over some iterable while loops can be `Error prone`, code would panic if suppose `while index < 4`. t’s also slow, because the compiler adds runtime code to perform the conditional check of whether the index is within the bounds of the array on every iteration through the loop.  
+While iterating over some iterable while loops can be `Error prone`, code would panic if suppose `while index < 6`. t’s also slow, because the compiler adds runtime code to perform the conditional check of whether the index is within the bounds of the array on every iteration through the loop.  
 **Solution:**  use `for` loop
 ```rust
 fn main() {

@@ -1,4 +1,4 @@
-Ownership is a set of rules that compiler checks to ensure memory is safe throughtout the lifetime and govern how a Rust program manages memory. It enables Rust to make memory safety guarantees without needing a garbage collector.  
+Ownership is a set of rules that compiler checks to ensure memory is safe and govern how a Rust program manages memory. It enables Rust to make memory safety guarantees without needing a garbage collector.  
 Keeping track of what parts of code are using what data on the heap, minimizing the amount of duplicate data on the heap, and cleaning up unused data on the heap so you don’t run out of space are all problems that ownership addresses.
 
 ## Stack vs Heap
@@ -24,7 +24,7 @@ String literals cannot be used everywhere as much as String, because-
 - string literals are `Immutable` and is of `fixed size`
 - cannot take user input at runtime *(in this situation allocator will need to allocate the heap memory at the runtime)*.
 
-For those, Rust has a second string type, **String**. This type manages data allocated on the heap and stores the data at compile time. 
+Rust has a second string type, **String**. It manages data allocated on the heap and stores the data at compile time. 
 
 Converting a string literal to String using the `String::from` function:
 ```rs
@@ -84,8 +84,8 @@ Main difference is when and where is the memory managed.
 - ***Case 1-*** String literal's size is fixed and is known at compile time, makes it fast and efficient which only comes because of its immutability property. Unfortunately, we can’t put a blob of memory into the binary for each piece of text whose size is unknown at compile time and whose size might change while running the program.
 - ***Case 2***- With the String type, in order to support a mutability, we need to allocate an amount of memory on the heap, unknown at compile time, to hold the contents. This means:
 
-    - The memory must be requested from the memory allocator at runtime.
-    - We need a way of returning this memory to the allocator when we’re done with our String.
+    - The memory must be requested from the "memory allocator" at runtime.
+    - We need a way of returning this memory to the "allocator" when we’re done with our String.
 
     The 1st part is done by us: when we call `String::from`, its implementation requests the memory it needs.
     The mistakes and blunders occurs while handling the 2nd part. If we forget to free/deallocate the memory the, we'll waste memory. If we do it too early we will have an invalid variable. If we do it twice, that's a bug.  
@@ -97,29 +97,26 @@ Main difference is when and where is the memory managed.
         let s = String::from("hello"); // s is valid from this point forward
         // do stuff with s
     }                                  // this scope is now over, and s is no
-                                       // longer valid, Rust calls drop automatically at the closing curly bracket
+                                       // longer valid, Rust calls "drop" automatically at the closing curly bracket
 
     ```
     >Note: In **C++**, this pattern of deallocating resources at the end of an item’s lifetime is sometimes called **Resource Acquisition Is Initialization (RAII)** .
 
-### Shallow copy(move in Rust)
+### Shallow copy (move in Rust)
 Normal copy is done here, as Normal datatype's value(integer, bool, float, char etc) is fixed and is  know at compile time. Also these values will be pushed onto the stack
 
-There’s no difference between "deep" and "shallow " copying here, as we are not interacting with heap memory, so calling `clone` wouldn’t do anything different from the usual "shallow" copying, and so, we can leave it out. Also the copies of actual values are quick to make here.
-    
-    // GO THROUGH IT LATER- 
-    Rust has a special annotation called the Copy trait that we can place on types that are stored on the stack, as integers are (we’ll talk more about traits in Chapter 10). If a type implements the Copy trait, variables that use it do not move, but rather are trivially copied, making them still valid after assignment to another variable.
+> Rust has a special annotation called the `Copy` trait that we can place on types that are stored on the stack. If a type implements the `Copy` trait, variables that use it do not move, but rather are trivially copied, making them still valid after assignment to another variable.  
+>
+> So, what types implement the `Copy` trait? check the documentation for the given type to be sure, but as a general rule, any group of simple `scalar values` can implement `Copy`, and nothing that requires allocation or is some form of resource can implement `Copy`. Here are some of the types that implement `Copy`:  
+> - All the integer types, such as `u32`.
+> - The Boolean type, `bool`, with values `true` and `false`.
+> - All the floating-point types, such as `f64`.
+> - The character type, `char`.
+> - Tuples, if they only contain types that also implement `Copy`. For example, (`i32`, `i32`) implements `Copy`, but (`i32`, `String`) does not.
+> 
+> Rust won’t let us annotate a type with `Copy` if the type, or any of its parts, has implemented the `Drop` trait. If the type needs something special to happen when the value goes out of scope and we add the `Copy` annotation to that type, we’ll get a "compile-time error".
 
-    Rust won’t let us annotate a type with Copy if the type, or any of its parts, has implemented the Drop trait. If the type needs something special to happen when the value goes out of scope and we add the Copy annotation to that type, we’ll get a compile-time error. To learn about how to add the Copy annotation to your type to implement the trait, see “Derivable Traits” in Appendix C.
-
-    So, what types implement the Copy trait? You can check the documentation for the given type to be sure, but as a general rule, any group of simple scalar values can implement Copy, and nothing that requires allocation or is some form of resource can implement Copy. Here are some of the types that implement Copy:
-
-    - All the integer types, such as u32.
-    - The Boolean type, bool, with values true and false.
-    - All the floating-point types, such as f64.
-    - The character type, char.
-    - Tuples, if they only contain types that also implement Copy. For example, (i32, i32) implements Copy, but (i32, String) does not.
-
+There’s no difference between "deep" and "shallow " copying here, as by default integer type implements `Copy` trait (since, we dont have to interact with heap memory), so calling `clone` wouldn’t do anything different from the usual "shallow" copying, and so, we can leave it out. Also the copies of actual values are quick to make here.
 
 
 ##### Stack-Only Data: Copy
@@ -127,7 +124,7 @@ There’s no difference between "deep" and "shallow " copying here, as we are no
     let x = 5;
     let y = x; 
 
-    //x is still valid and wasn’t moved into y
+    //x is still valid and wasn’t moved into y,(it is copied internally becuase of its default `Copy` trait implementation)
     println!("x = {}, y = {}", x, y); //x=5, y=5
 ```
 
@@ -170,7 +167,7 @@ The problem is solved, now `Only s2` will `free` the memory, when it goes out of
 <img src='./figures/StringDeepCopy.jpg' height='400px'>
 
 # Ownership in functions
-Passing a variable to a function will move or copy, just as assignment does. `Ownership can be transfered` into function and can be returned back from function (from the fn with return values)
+
 ```rs
 fn main() {
     let s = String::from("hello");  // s comes into scope
@@ -189,7 +186,7 @@ fn main() {
 
 fn takes_ownership(some_string: String) { // some_string comes into scope
     println!("{}", some_string);
-} // Here, some_string goes out of scope and `drop` is called. The backing
+} // Here, some_string goes out of scope and `drop` is called automatically. The backing
   // memory is freed.
 
 fn makes_copy(some_integer: i32) { // some_integer comes into scope
@@ -232,9 +229,31 @@ fn takes_and_gives_back(a_string: String) -> String { // a_string comes into
 ```
 The ownership of a variable follows the same pattern every time:
 - assigning a value to another variable moves it.
-- When a variable that includes data on the heap goes out of scope, the value will be cleaned up by drop unless ownership of the data has been moved to another variable.
+- When a variable that includes data on the heap goes out of scope, the value will be cleaned up by `drop` unless ownership of the data has been moved to another variable.
 
 While this works, taking ownership and then returning ownership with every function is a bit tedious.  
 
 Rust has a feature for using a value without transferring ownership, called `borrowing (using references)`
 
+<hr>
+
+# Question  
+```rs
+fn main() {
+    let mut s = String::from("helloworld");
+
+    let word = first_word(&s);
+    s.clear(); // why is this error, even though the return of `first_word()` is completely independent of `&s`
+    println!("the first word is: {}", word);
+}
+fn first_word(_s: &String) -> &str {
+    // not even using the original string `s`
+    let a = "Aadarsh";
+    &a[..] 
+}
+```
+# Reason  
+Because the above functions is equivalent to this-  
+```rs
+fn first_word<'a>(s: &'a String) -> &'a str
+```
