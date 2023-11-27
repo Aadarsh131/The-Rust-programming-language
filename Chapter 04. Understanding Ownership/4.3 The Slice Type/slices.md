@@ -57,24 +57,21 @@ fn first_word(s: &String) -> &str {
     let mut s = String::from("helloworld");
 
     let word = first_word(&s);
-    s.clear(); // why is this error, even though the return of `first_word(&s)` is completely independent of `&s`
+    s.clear(); // why is this error
         println!("the first word is: {}", word);
     }
     fn first_word(_s: &String) -> &str {
-        // not even using the original string `s`
         let a = "Aadarsh";
         &a[..] 
     }
     ```
     Explanation- 
 
-    Rust doesn't look inside the function to resolve lifetimes, only at the declaration. 
-
-    If you don't explicitly say your function returns a `&'static str`, it will tie the lifetime to the input reference. 
-    In other words, what you wrote is equivalent to
-    `fn first_word<'a>(s: &'a String) -> &'a str`
-
-    Note, based on the name off the function, this probably what you want, so rust is doing you a favor by ensuring your code doesn't break when you switch from your prototype implementation to the real thing.
+    because of 1st and 2nd rule together, the fn signature gets converted to 
+    ```rust
+    fn first_word<'a>(s: &'a String) -> &'a str`
+    ```
+    so, now the lifetime of `s` (&String) would be live until the `s.clear()`(which is internally having taking the `&mut`), and as we cannot have `&` and `&mut` together, we would get and error
 
     /////////////////////////////////////////////////////////////////////
    
