@@ -33,47 +33,26 @@ fn first_word(s: &String) -> &str {
     &s[..]
 }
 ```
-- NOTE:
-    ```rs
-    let word = first_word(&s);
-    s.clear(); //this is an error because of the return type of the `first_word()`
-
-    fn first_word(s: &String) -> &str { //if the return type is anything other than `&str` or `&String`,then `s.clear()` will not give a compile error
-
-        //returning either the original ref
-        //&s 
-
-        //OR
-        let a = "Aadarsh";
-        &a //here we are not even returning the ref to `s` still the compiler assume we might return some ref to `s` and hence throws an error to `s.clear();` (as we can not use mut ref with other ref of the same data).
-        // Rust doesn't look inside the function to resolve lifetimes, only at the declaration. 
-    }
-    ```
-    //////////////////////////////////////////////////////////
-    ## Advanced help from Rust Discord server. Keeping it for future reference-
-    Q. 
-    ```rs
-    fn main() {
-    let mut s = String::from("helloworld");
-
-    let word = first_word(&s);
-    s.clear(); // why is this error
-        println!("the first word is: {}", word);
-    }
-    fn first_word(_s: &String) -> &str {
-        let a = "Aadarsh";
-        &a[..] 
-    }
-    ```
-    Explanation- 
-
-    because of 1st and 2nd rule together, the fn signature gets converted to 
-    ```rust
-    fn first_word<'a>(s: &'a String) -> &'a str`
-    ```
-    so, now the lifetime of `s` (&String) would be live until the `s.clear()`(which is internally having taking the `&mut`), and as we cannot have `&` and `&mut` together, we would get and error
-
-    /////////////////////////////////////////////////////////////////////
+## Advanced help from Rust Discord server. Keeping it for future reference-
+Q. 
+```rs
+fn main() {
+let mut s = String::from("helloworld");
+let word = first_word(&s);
+s.clear(); // why is this error?
+println!("the first word is: {}", word); //try removing this line
+}
+fn first_word(_s: &String) -> &str {
+    let a = "Aadarsh";
+    &a[..] 
+}
+```
+**Explanation-**   
+because of 1st and 2nd lifetime ellision rule together, the fn signature gets converted to 
+```rust
+fn first_word<'a>(s: &'a String) -> &'a str
+```
+so, now the lifetime of `s` (&String) will live until the the `word` lives (in our case until the end of th program), but `s.clear()`(which is internally having the `&mut` of `s`) is conflicting with the rule that we cannot have `&` and `&mut` together (sidenote- we can have it together until the first ref is never used after the second), hence, we are getting an error
    
 ## String literals as Slices
 ```rs
